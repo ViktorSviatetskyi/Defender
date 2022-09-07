@@ -1,9 +1,10 @@
 import pygame
 
-class Ino (pygame.sprite.Sprite):
+
+class Kuilo (pygame.sprite.Sprite):
 
     def __init__(self, screen):
-        super(Ino, self).__init__()
+        super(Kuilo, self).__init__()
         self.screen = screen
         self.image = pygame.image.load('images/kuilo.png')
         self.rect = self.image.get_rect()
@@ -15,6 +16,6 @@ class Ino (pygame.sprite.Sprite):
     def draw(self):
         self.screen.blit(self.image, self.rect)
 
-    def update (self):
+    def update(self):
         self.y += 0.1
         self.rect.y = self.y

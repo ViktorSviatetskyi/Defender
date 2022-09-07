@@ -1,6 +1,8 @@
 import pygame, sys
 from bullet import Bullet
-from ino import Ino
+from kuilo import Kuilo
+import time
+
 
 def events(screen, gun, bullets):
     for event in pygame.event.get():
@@ -20,40 +22,63 @@ def events(screen, gun, bullets):
             elif event.key == pygame.K_LEFT:
                 gun.mleft = False
 
-def update (bg_color, screen, gun, ino, bullets):
+
+def update(bg_color, screen, gun, kuilo, bullets):
     screen.fill(bg_color)
     for bullet in bullets.sprites():
         bullet.draw_bullet()
     gun.output()
-    ino.draw(screen)
+    kuilo.draw(screen)
     pygame.display.flip()
 
 
-def update_bullets(bullets):
+def update_bullets(screen, kuilo, bullets):
     bullets.update()
     for bullet in bullets.copy():
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
-    #print(len(bullets))
+    collections = pygame.sprite.groupcollide(bullets, kuilo, True, True)
+    if len(kuilo) == 0:
+        bullets.empty()
+        create_army(screen, kuilo)
+
+
+def inos_check(stats, screen, gun, kuilo, bullets):
+    screen_rect = screen.get_rect()
+    for kuilos in kuilo.sprites():
+        if kuilos.rect.bottom >= screen_rect.bottom:
+            gun_kill(stats, screen, gun, kuilo, bullets)
+            break
 
 
 def create_army(screen, inos):
-    ino = Ino(screen)
-    ino_width = ino.rect.width
-    number_ino_x = int((900 - 2 * ino_width )/ino_width)
-    ino_height = ino.rect.height
-    number_ino_y = int((800 - 100- 2 * ino_height)/ino_height)
+    kuilo = Kuilo(screen)
+    ino_width = kuilo.rect.width
+    number_ino_x = int((900 - 2 * ino_width) / ino_width)
+    ino_height = kuilo.rect.height
+    number_ino_y = int((800 - 100 - 2 * ino_height) / ino_height)
 
     for row_number in range(number_ino_y - 3):
         for ino_number in range(number_ino_x):
-            ino = Ino(screen)
+            ino = Kuilo(screen)
             ino.x = ino_width + ino_width * ino_number
             ino.y = ino_height + ino_height * row_number
             ino.rect.x = ino.x
             ino.rect.y = ino.rect.height + ino.rect.height * row_number
             inos.add(ino)
 
-def update_inos(inos):
-    inos.update()
+
+def gun_kill(stats, screen, gun, kuilo, bullets):
+    stats.guns_left -= 1
+    kuilo.empty()
+    bullets.empty()
+    create_army(screen, kuilo)
+    gun.create_gun()
+    time.sleep(1.5)
 
 
+def update_inos(stats, screen, gun, kuilo, bullets):
+    kuilo.update()
+    if pygame.sprite.spritecollideany(gun, kuilo):
+        gun_kill(stats, screen, gun, kuilo, bullets)
+    inos_check(stats, screen, gun, kuilo, bullets)
